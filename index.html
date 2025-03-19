@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Apocalypse Escape</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            background-color: black;
+            color: white;
+            transition: background 0.5s;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .hidden {
+            display: none;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .green-screen {
+            background-color: black !important;
+            color: #00ffcc !important;
+        }
+        .red-screen {
+            background-color: red !important;
+            color: black !important;
+        }
+        input {
+            padding: 10px;
+            font-size: 18px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        video {
+            width: 80%;
+            max-width: 800px;
+            height: auto;
+        }
+    </style>
+    <!-- Add this new style block to adjust the video size -->
+    <style>
+        #introVideo {
+            width: 80vw; /* 80% of the viewport width */
+            height: 80vh; /* 80% of the viewport height */
+            max-width: none; /* Remove max-width restriction */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Click to Start Overlay -->
+    <div id="overlay" class="overlay" onclick="startIntro()">
+        Click to Start 🚨
+    </div>
+
+    <!-- Intro Video Screen -->
+    <div id="introVideoScreen" class="hidden">
+        <video id="introVideo" controls autoplay>
+            <source src="intro.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <div id="container">
+        <div id="startScreen" class="hidden">
+            <h1>🚨 YOU'RE IN AN AI APOCALYPSE! 🚨</h1>
+            <p>Find all the keys before the AI takes over the world.</p>
+            <button onclick="startGame()">Start</button>
+        </div>
+
+        <div id="gameScreen" class="hidden">
+            <div id="timer">Time Left: 10:00</div>
+            <h2 id="hintText">Find the first key hidden somewhere in the class!<br>
+                “Arrays start at zero, and loops must flow.<br>
+                To find your key, look down below.<br>
+                Bench three holds what you seek—<br>
+                Beneath the surface, take a peek.”</h2>
+            <input type="number" id="keyInput" placeholder="Enter key here">
+            <button onclick="checkKey()">Submit</button>
+        </div>
+
+        <div id="finalScreen" class="hidden">
+            <h2>Code to shutdown the AI</h2>
+            <input type="number" id="finalCodeInput" placeholder="Enter final code(Combination of all codes)">
+            <button onclick="checkFinalCode()">Submit</button>
+        </div>
+    </div>
+
+    <audio id="siren" loop>
+        <source src="Sirensappudu.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="buzzer">
+        <source src="tappusappudu.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="victorySound">
+        <source src="https://www.myinstants.com/media/sounds/victory.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const secretCode = "25149";  
+        const keys = ["25", "14", "9"];  
+        let currentKeyIndex = 0;
+        let timerInterval;
+
+        function startIntro() {
+            // Hide the overlay
+            document.getElementById("overlay").style.display = "none";
+
+            // Show the intro video screen
+            document.getElementById("introVideoScreen").classList.remove("hidden");
+
+            // Play the intro video
+            let introVideo = document.getElementById("introVideo");
+            introVideo.play();
+
+            // When the video ends, start the siren and show the start screen
+            introVideo.onended = () => {
+                document.getElementById("introVideoScreen").classList.add("hidden");
+                startSiren();
+            };
+        }
+
+        function startSiren() {
+            // Play the siren sound
+            let siren = document.getElementById("siren");
+            siren.play();
+
+            // Show the start screen
+            document.getElementById("startScreen").classList.remove("hidden");
+        }
+
+        function startGame() {
+            // Stop the siren sound
+            let siren = document.getElementById("siren");
+            siren.pause();
+            siren.currentTime = 0;
+
+            // Hide the start screen and show the game screen
+            document.getElementById("startScreen").classList.add("hidden");
+            document.getElementById("gameScreen").classList.remove("hidden");
+
+            // Start the timer
+            startTimer(10 * 60);
+        }
+
+        function startTimer(duration) {
+            let timerDisplay = document.getElementById("timer");
+            let timeLeft = duration;
+            timerInterval = setInterval(() => {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                timerDisplay.textContent = `Time Left: ${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.body.classList.add("red-screen");
+                    document.getElementById("gameScreen").innerHTML = "<h1>🚨 Time's up! The AI has taken over. 🚨</h1>";
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function checkKey() {
+            let inputVal = document.getElementById("keyInput").value;
+            if (inputVal === keys[currentKeyIndex]) {
+                currentKeyIndex++;
+                if (currentKeyIndex < keys.length) {
+                    // Update the hint text for the next key
+                    if (currentKeyIndex === 1) {
+                        document.getElementById("hintText").innerHTML = `Great! Now find the next key.<br>
+                            “The AI’s creator stood up tall,<br>
+                            Commands were given to control it all.<br>
+                            Where code was spoken, not just read—<br>
+                            Seek the place where leaders led.”`;
+                    } else if (currentKeyIndex === 2) {
+                        document.getElementById("hintText").innerHTML = `Great! Now find the next key.<br>
+                            “Data flows through ports and light,<br>
+                            The outside world is in plain sight.<br>
+                            Behind the window panes, a breeze may blow—<br>
+                            That’s where the access code will go.”`;
+                    } else {
+                        document.getElementById("hintText").textContent = `Great! Now find the next key (Key ${currentKeyIndex + 1}).`;
+                    }
+                    document.getElementById("keyInput").value = "";
+                } else {
+                    document.getElementById("gameScreen").classList.add("hidden");
+                    document.getElementById("finalScreen").classList.remove("hidden");
+                }
+            } else {
+                document.getElementById("buzzer").play();
+                alert("❌ Incorrect key! Keep searching.");
+            }
+        }
+
+        function checkFinalCode() {
+            let finalCodeInput = document.getElementById("finalCodeInput").value;
+            if (finalCodeInput === secretCode) {
+                document.body.classList.add("green-screen");
+                document.getElementById("finalScreen").innerHTML = "<h1>🎉 AI Shutdown! You Saved Humanity! 🎉</h1>";
+                clearInterval(timerInterval);
+                document.getElementById("victorySound").play();
+            } else {
+                document.getElementById("buzzer").play();
+                alert("❌ Incorrect code! Try again.");
+            }
+        }
+    </script>
+
+</body>
+</html>
